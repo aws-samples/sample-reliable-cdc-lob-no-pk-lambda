@@ -10,6 +10,8 @@ AWS DMS performs the initial full load. AWS Lambda then reads SQL Server CDC cha
 
 Before using the pattern, run `sql/01-source-prerequisites.sql`. `SourceRecordID` must be non-null and unique. Resolve any violations before continuing. The target enforces the same invariant with a unique key.
 
+Also run `sql/00-size-lobmaxsize.sql` to size the AWS DMS `LobMaxSize` for the full load. Because the table has no primary key, the full load uses limited LOB mode, which truncates any value larger than `LobMaxSize`; set it to the value the script reports so the baseline copies every LOB intact.
+
 ## Processing model
 
 1. Establish a valid CDC migration-start boundary before or in coordination with the AWS DMS full load.
@@ -36,6 +38,7 @@ The migration runbook must choose `migration_start_lsn` first. `sys.fn_cdc_decre
 
 ```text
 src/lambda_function.py
+sql/00-size-lobmaxsize.sql
 sql/01-source-prerequisites.sql
 sql/02-source-cdc.sql
 sql/03-target-schema.sql
